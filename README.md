@@ -1,5 +1,7 @@
 # DAO Delegate Conflict Disclosure Gate
 
+Live application: [mandate-glass.pages.dev](https://mandate-glass.pages.dev/)
+
 An Intelligent Contract that decides whether a DAO delegate disclosed canonical active affiliations that semantically match recipients of one specific proposal.
 
 The design is intentionally narrow. It does not claim to discover private relationships or prove every real-world conflict. It compares three DAO-controlled documents locked in one exact public GitHub snapshot before the vote deadline:
