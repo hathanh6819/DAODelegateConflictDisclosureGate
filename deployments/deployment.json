@@ -11,5 +11,7 @@
   "genvm_method_count": 10,
   "deployed_address": "0x2C32b1A27C80C81239Ba883812979E2E1b358786",
   "deployment_tx_hash": "",
-  "status": "SOURCE_AND_SCHEMA_VERIFIED"
+  "canonical_fixture_repository": "https://github.com/hathanh6819/DAODelegateConflictEvidenceFixtures",
+  "onchain_review_count": 4,
+  "status": "SOURCE_SCHEMA_AND_LIFECYCLE_VERIFIED"
 }
