@@ -225,7 +225,7 @@ def _acquire(repo: str, commit_sha: str, proposal_path: str, registry_path: str,
     return json.dumps({"digest": digest, "decision": normalized}, sort_keys=True, separators=(",", ":"))
 
 
-class DAODelegateConflictDisclosureGate(gl.Contract):
+class _LegacyRegistryReference:
     review_count: u256
     creator: TreeMap[u256, str]
     repository: TreeMap[u256, str]
@@ -442,4 +442,267 @@ class DAODelegateConflictDisclosureGate(gl.Contract):
                 "role": self.match_role[key], "disclosed": int(self.match_disclosed[key]) == 1}
 
 
-Contract = DAODelegateConflictDisclosureGate
+class MandateGlassGovernanceGate(gl.Contract):
+    """Authority-controlled DAO proposal registry with an atomic guarded vote path."""
+    owner: str
+    dao_count: u256
+    proposal_count: u256
+    review_count: u256
+    vote_count: u256
+
+    dao_authority: TreeMap[u256, str]
+    dao_repository: TreeMap[u256, str]
+    dao_proposal_path: TreeMap[u256, str]
+    dao_registry_path: TreeMap[u256, str]
+    dao_disclosure_path: TreeMap[u256, str]
+    dao_policy: TreeMap[u256, str]
+    dao_revision: TreeMap[u256, u256]
+    dao_active: TreeMap[u256, u256]
+
+    proposal_dao: TreeMap[u256, u256]
+    proposal_external_id: TreeMap[u256, str]
+    proposal_commit: TreeMap[u256, str]
+    proposal_action: TreeMap[u256, str]
+    proposal_deadline: TreeMap[u256, u256]
+    proposal_revision: TreeMap[u256, u256]
+    proposal_open: TreeMap[u256, u256]
+
+    review_proposal: TreeMap[u256, u256]
+    review_delegate: TreeMap[u256, str]
+    review_state: TreeMap[u256, u256]
+    review_revision: TreeMap[u256, u256]
+    review_retry_count: TreeMap[u256, u256]
+    review_verdict: TreeMap[u256, u256]
+    review_reason: TreeMap[u256, str]
+    review_digest: TreeMap[u256, str]
+    review_match_count: TreeMap[u256, u256]
+    review_consumed: TreeMap[u256, u256]
+    review_scope: TreeMap[u256, str]
+    review_match_recipient: TreeMap[u256, str]
+    review_match_organization: TreeMap[u256, str]
+    review_match_role: TreeMap[u256, str]
+    review_match_disclosed: TreeMap[u256, u256]
+
+    vote_review: TreeMap[u256, u256]
+    vote_proposal: TreeMap[u256, u256]
+    vote_delegate: TreeMap[u256, str]
+    vote_support: TreeMap[u256, u256]
+    vote_action: TreeMap[u256, str]
+    vote_created_at: TreeMap[u256, u256]
+
+    def __init__(self):
+        self.owner = str(gl.message.sender_address).lower()
+        self.dao_count = u256(0)
+        self.proposal_count = u256(0)
+        self.review_count = u256(0)
+        self.vote_count = u256(0)
+
+    def _owner_only(self):
+        if str(gl.message.sender_address).lower() != self.owner: raise gl.vm.UserError("ONLY_OWNER")
+
+    def _dao_authority_only(self, dao_id: u256):
+        if dao_id <= u256(0) or dao_id > self.dao_count or int(self.dao_active[dao_id]) != 1: raise gl.vm.UserError("INVALID_DAO")
+        if str(gl.message.sender_address).lower() != self.dao_authority[dao_id]: raise gl.vm.UserError("ONLY_DAO_AUTHORITY")
+
+    def _scope(self, dao_id: u256, proposal_id: u256, delegate: str, action: str,
+               review_revision: u256, proposal_revision: u256, expiry: u256) -> str:
+        value = (str(dao_id) + "|" + self.dao_authority[dao_id] + "|" + str(proposal_id) + "|" +
+                 delegate + "|" + action + "|" + str(review_revision) + "|" +
+                 str(proposal_revision) + "|" + str(expiry))
+        return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+    @gl.public.write
+    def register_dao(self, authority: Address, repository: str, proposal_path: str,
+                     registry_path: str, disclosure_path: str, policy: str) -> u256:
+        self._owner_only()
+        auth, repo = str(authority).lower(), repository.strip()
+        paths = (proposal_path.strip(), registry_path.strip(), disclosure_path.strip())
+        if not _address_text(auth): raise gl.vm.UserError("INVALID_DAO_AUTHORITY")
+        if not _repo(repo): raise gl.vm.UserError("INVALID_REPOSITORY")
+        if any(not _path(p) for p in paths) or len(set(paths)) != 3: raise gl.vm.UserError("INVALID_DOCUMENT_PATHS")
+        if not _string(policy.strip(), 2000): raise gl.vm.UserError("INVALID_POLICY")
+        dao_id = self.dao_count + u256(1)
+        self.dao_authority[dao_id], self.dao_repository[dao_id] = auth, repo
+        self.dao_proposal_path[dao_id], self.dao_registry_path[dao_id], self.dao_disclosure_path[dao_id] = paths
+        self.dao_policy[dao_id], self.dao_revision[dao_id], self.dao_active[dao_id] = policy.strip(), u256(1), u256(1)
+        self.dao_count = dao_id
+        return dao_id
+
+    @gl.public.write
+    def update_dao_sources(self, dao_id: u256, expected_revision: u256, repository: str,
+                           proposal_path: str, registry_path: str, disclosure_path: str,
+                           policy: str) -> u256:
+        self._dao_authority_only(dao_id)
+        if expected_revision != self.dao_revision[dao_id]: raise gl.vm.UserError("STALE_DAO_REVISION")
+        repo, paths = repository.strip(), (proposal_path.strip(), registry_path.strip(), disclosure_path.strip())
+        if not _repo(repo): raise gl.vm.UserError("INVALID_REPOSITORY")
+        if any(not _path(p) for p in paths) or len(set(paths)) != 3: raise gl.vm.UserError("INVALID_DOCUMENT_PATHS")
+        if not _string(policy.strip(), 2000): raise gl.vm.UserError("INVALID_POLICY")
+        self.dao_repository[dao_id] = repo
+        self.dao_proposal_path[dao_id], self.dao_registry_path[dao_id], self.dao_disclosure_path[dao_id] = paths
+        self.dao_policy[dao_id] = policy.strip()
+        self.dao_revision[dao_id] = expected_revision + u256(1)
+        return dao_id
+
+    @gl.public.write
+    def register_proposal(self, dao_id: u256, external_id: str, snapshot_commit: str,
+                          action_digest: str, deadline: u256) -> u256:
+        self._dao_authority_only(dao_id)
+        ext, commit, action, now = external_id.strip(), snapshot_commit.strip().lower(), action_digest.strip().lower(), _now()
+        if not _string(ext, 80): raise gl.vm.UserError("INVALID_PROPOSAL_ID")
+        if not _sha40(commit): raise gl.vm.UserError("INVALID_SNAPSHOT_COMMIT")
+        if len(action) != 71 or not action.startswith("sha256:") or any(c not in "0123456789abcdef" for c in action[7:]): raise gl.vm.UserError("INVALID_ACTION_DIGEST")
+        if int(deadline) <= now or int(deadline) > now + 2592000: raise gl.vm.UserError("INVALID_VOTE_DEADLINE")
+        pid = self.proposal_count + u256(1)
+        self.proposal_dao[pid], self.proposal_external_id[pid], self.proposal_commit[pid] = dao_id, ext, commit
+        self.proposal_action[pid], self.proposal_deadline[pid] = action, deadline
+        self.proposal_revision[pid], self.proposal_open[pid] = u256(1), u256(1)
+        self.proposal_count = pid
+        return pid
+
+    @gl.public.write
+    def close_proposal(self, proposal_id: u256, expected_revision: u256) -> u256:
+        if proposal_id <= u256(0) or proposal_id > self.proposal_count: raise gl.vm.UserError("INVALID_PROPOSAL")
+        self._dao_authority_only(self.proposal_dao[proposal_id])
+        if expected_revision != self.proposal_revision[proposal_id]: raise gl.vm.UserError("STALE_PROPOSAL_REVISION")
+        self.proposal_open[proposal_id] = u256(0)
+        self.proposal_revision[proposal_id] = expected_revision + u256(1)
+        return proposal_id
+
+    @gl.public.write
+    def create_review(self, proposal_id: u256, delegate: Address) -> u256:
+        if proposal_id <= u256(0) or proposal_id > self.proposal_count or int(self.proposal_open[proposal_id]) != 1: raise gl.vm.UserError("PROPOSAL_NOT_OPEN")
+        delegate_text = str(delegate).lower()
+        if str(gl.message.sender_address).lower() != delegate_text: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
+        if _now() > int(self.proposal_deadline[proposal_id]): raise gl.vm.UserError("VOTE_DEADLINE_PASSED")
+        rid = self.review_count + u256(1)
+        self.review_proposal[rid], self.review_delegate[rid] = proposal_id, delegate_text
+        self.review_state[rid], self.review_revision[rid], self.review_retry_count[rid] = u256(PENDING), u256(1), u256(0)
+        self.review_verdict[rid], self.review_reason[rid] = u256(VERDICT_INSUFFICIENT_EVIDENCE), "PENDING_EVALUATION"
+        self.review_digest[rid], self.review_match_count[rid], self.review_consumed[rid], self.review_scope[rid] = "", u256(0), u256(0), ""
+        self.review_count = rid
+        return rid
+
+    def _evaluate(self, review_id: u256, expected_revision: u256) -> u256:
+        if review_id <= u256(0) or review_id > self.review_count: raise gl.vm.UserError("INVALID_REVIEW_ID")
+        if int(self.review_state[review_id]) not in (PENDING, UNRESOLVED): raise gl.vm.UserError("INVALID_REVIEW_STATE")
+        if expected_revision != self.review_revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
+        pid, delegate = self.review_proposal[review_id], self.review_delegate[review_id]
+        dao_id = self.proposal_dao[pid]
+        if int(self.proposal_open[pid]) != 1 or _now() > int(self.proposal_deadline[pid]): raise gl.vm.UserError("VOTE_WINDOW_CLOSED")
+        self.review_digest[review_id], self.review_match_count[review_id] = "", u256(0)
+        def acquire():
+            try:
+                return _acquire(self.dao_repository[dao_id], self.proposal_commit[pid], self.dao_proposal_path[dao_id],
+                                self.dao_registry_path[dao_id], self.dao_disclosure_path[dao_id],
+                                self.proposal_external_id[pid], delegate, self.dao_policy[dao_id])
+            except Exception:
+                return json.dumps({"error":"ACQUISITION_FAILURE"})
+        raw = gl.eq_principle.strict_eq(acquire)
+        try:
+            bundle, seen, keys, all_disclosed = json.loads(raw), set(), [], True
+            if not isinstance(bundle, dict) or bundle.get("error"): raise _DecisionError(str(bundle.get("error", "CONSENSUS_INVALID")))
+            digest, decision = bundle.get("digest", ""), json.loads(bundle.get("decision", ""))
+            if len(digest) != 71 or not digest.startswith("sha256:"): raise _DecisionError("DIGEST_INVALID")
+            if not isinstance(decision, dict) or set(decision) != {"verdict","matches"}: raise _DecisionError("DECISION_SCHEMA_INVALID")
+            verdict_text, matches = decision["verdict"], decision["matches"]
+            if verdict_text not in ("CLEAR","DISCLOSED_CONFLICT","UNDISCLOSED_CONFLICT") or not isinstance(matches,list) or len(matches)>MAX_RELATIONSHIPS: raise _DecisionError("DECISION_VALUE_INVALID")
+            for index,item in enumerate(matches):
+                if not isinstance(item,dict) or set(item)!={"recipient_id","organization","role","disclosed"}: raise _DecisionError("MATCH_SCHEMA_INVALID")
+                if not _string(item["recipient_id"],32) or not _string(item["organization"],120) or not _string(item["role"],120) or type(item["disclosed"]) is not bool: raise _DecisionError("MATCH_VALUE_INVALID")
+                key=item["recipient_id"]+"\x00"+item["organization"]
+                if key in seen: raise _DecisionError("DUPLICATE_MATCH")
+                seen.add(key);keys.append(key);all_disclosed=all_disclosed and item["disclosed"]
+                sk=review_id*u256(100)+u256(index)
+                self.review_match_recipient[sk],self.review_match_organization[sk],self.review_match_role[sk]=item["recipient_id"],item["organization"],item["role"]
+                self.review_match_disclosed[sk]=u256(1 if item["disclosed"] else 0)
+            if keys!=sorted(keys): raise _DecisionError("MATCH_ORDER_INVALID")
+            if ((verdict_text=="CLEAR" and matches) or (verdict_text=="DISCLOSED_CONFLICT" and (not matches or not all_disclosed)) or (verdict_text=="UNDISCLOSED_CONFLICT" and (not matches or all_disclosed))): raise _DecisionError("VERDICT_MATCH_INVARIANT")
+            verdict_map={"CLEAR":VERDICT_CLEAR,"DISCLOSED_CONFLICT":VERDICT_DISCLOSED_CONFLICT,"UNDISCLOSED_CONFLICT":VERDICT_UNDISCLOSED_CONFLICT}
+            self.review_verdict[review_id],self.review_digest[review_id],self.review_match_count[review_id]=u256(verdict_map[verdict_text]),digest,u256(len(matches))
+            self.review_reason[review_id],self.review_state[review_id]=verdict_text,u256(EVALUATED)
+        except _DecisionError as exc:
+            self.review_verdict[review_id],self.review_reason[review_id],self.review_state[review_id]=u256(VERDICT_INSUFFICIENT_EVIDENCE),str(exc)[:64],u256(UNRESOLVED)
+        except Exception:
+            self.review_verdict[review_id],self.review_reason[review_id],self.review_state[review_id]=u256(VERDICT_INSUFFICIENT_EVIDENCE),"MALFORMED_CONSENSUS_OUTPUT",u256(UNRESOLVED)
+        return review_id
+
+    @gl.public.write
+    def evaluate_review(self, review_id: u256, expected_revision: u256) -> u256:
+        return self._evaluate(review_id, expected_revision)
+
+    @gl.public.write
+    def retry_review(self, review_id: u256, expected_revision: u256) -> u256:
+        if review_id <= u256(0) or review_id > self.review_count or int(self.review_state[review_id]) != UNRESOLVED: raise gl.vm.UserError("ONLY_UNRESOLVED_CAN_RETRY")
+        if int(self.review_retry_count[review_id]) >= MAX_RETRIES: raise gl.vm.UserError("RETRY_LIMIT_REACHED")
+        self.review_retry_count[review_id] = self.review_retry_count[review_id] + u256(1)
+        return self._evaluate(review_id, expected_revision)
+
+    @gl.public.write
+    def authorize_result(self, review_id: u256, expected_revision: u256) -> u256:
+        if review_id <= u256(0) or review_id > self.review_count or int(self.review_state[review_id]) != EVALUATED: raise gl.vm.UserError("INVALID_REVIEW_STATE")
+        if expected_revision != self.review_revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
+        if int(self.review_verdict[review_id]) not in (VERDICT_CLEAR,VERDICT_DISCLOSED_CONFLICT): raise gl.vm.UserError("VERDICT_NOT_AUTHORIZABLE")
+        pid=self.review_proposal[review_id]
+        if int(self.proposal_open[pid])!=1 or _now()>int(self.proposal_deadline[pid]): raise gl.vm.UserError("VOTE_WINDOW_CLOSED")
+        dao_id=self.proposal_dao[pid]
+        self.review_scope[review_id]=self._scope(dao_id,pid,self.review_delegate[review_id],self.proposal_action[pid],expected_revision,self.proposal_revision[pid],self.proposal_deadline[pid])
+        self.review_state[review_id]=u256(AUTHORIZED)
+        return review_id
+
+    @gl.public.write
+    def execute_vote(self, review_id: u256, expected_revision: u256, action_digest: str, support: bool) -> u256:
+        if review_id<=u256(0) or review_id>self.review_count or int(self.review_state[review_id])!=AUTHORIZED: raise gl.vm.UserError("NOT_AUTHORIZED")
+        if expected_revision!=self.review_revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
+        delegate=self.review_delegate[review_id]
+        if str(gl.message.sender_address).lower()!=delegate: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
+        pid=self.review_proposal[review_id];dao_id=self.proposal_dao[pid];action=action_digest.strip().lower()
+        if int(self.proposal_open[pid])!=1 or _now()>int(self.proposal_deadline[pid]): raise gl.vm.UserError("VOTE_WINDOW_CLOSED")
+        if action!=self.proposal_action[pid]: raise gl.vm.UserError("ACTION_SCOPE_MISMATCH")
+        scope=self._scope(dao_id,pid,delegate,action,expected_revision,self.proposal_revision[pid],self.proposal_deadline[pid])
+        if scope!=self.review_scope[review_id]: raise gl.vm.UserError("AUTHORIZATION_SCOPE_MISMATCH")
+        if int(self.review_consumed[review_id])==1: raise gl.vm.UserError("AUTHORIZATION_ALREADY_CONSUMED")
+        vid=self.vote_count+u256(1)
+        self.vote_review[vid],self.vote_proposal[vid],self.vote_delegate[vid]=review_id,pid,delegate
+        self.vote_support[vid],self.vote_action[vid],self.vote_created_at[vid]=u256(1 if support else 0),action,u256(_now())
+        self.review_consumed[review_id],self.review_state[review_id]=u256(1),u256(CONSUMED)
+        self.vote_count=vid
+        return vid
+
+    @gl.public.view
+    def get_protocol(self)->dict:
+        return {"name":"MandateGlassGovernanceGate","version":2,"max_files":MAX_FILES,"max_file_bytes":MAX_FILE_BYTES,"max_total_bytes":MAX_TOTAL_BYTES,"max_retries":MAX_RETRIES}
+
+    @gl.public.view
+    def get_counts(self)->dict:
+        return {"daos":int(self.dao_count),"proposals":int(self.proposal_count),"reviews":int(self.review_count),"votes":int(self.vote_count)}
+
+    @gl.public.view
+    def get_dao(self,dao_id:u256)->dict:
+        if dao_id<=u256(0) or dao_id>self.dao_count:return {}
+        return {"dao_id":int(dao_id),"authority":self.dao_authority[dao_id],"repository":self.dao_repository[dao_id],"proposal_path":self.dao_proposal_path[dao_id],"registry_path":self.dao_registry_path[dao_id],"disclosure_path":self.dao_disclosure_path[dao_id],"policy":self.dao_policy[dao_id],"revision":int(self.dao_revision[dao_id]),"active":int(self.dao_active[dao_id])==1}
+
+    @gl.public.view
+    def get_proposal(self,pid:u256)->dict:
+        if pid<=u256(0) or pid>self.proposal_count:return {}
+        return {"proposal_id":int(pid),"dao_id":int(self.proposal_dao[pid]),"external_id":self.proposal_external_id[pid],"snapshot_commit":self.proposal_commit[pid],"action_digest":self.proposal_action[pid],"deadline":str(self.proposal_deadline[pid]),"revision":int(self.proposal_revision[pid]),"open":int(self.proposal_open[pid])==1}
+
+    @gl.public.view
+    def get_review(self,rid:u256)->dict:
+        if rid<=u256(0) or rid>self.review_count:return {}
+        pid=self.review_proposal[rid]
+        return {"review_id":int(rid),"proposal_id":int(pid),"dao_id":int(self.proposal_dao[pid]),"delegate":self.review_delegate[rid],"state":int(self.review_state[rid]),"revision":int(self.review_revision[rid]),"retry_count":int(self.review_retry_count[rid]),"verdict":int(self.review_verdict[rid]),"reason":self.review_reason[rid],"evidence_digest":self.review_digest[rid],"match_count":int(self.review_match_count[rid]),"authorization_consumed":int(self.review_consumed[rid]),"authorization_scope":self.review_scope[rid]}
+
+    @gl.public.view
+    def get_vote(self,vid:u256)->dict:
+        if vid<=u256(0) or vid>self.vote_count:return {}
+        return {"vote_id":int(vid),"review_id":int(self.vote_review[vid]),"proposal_id":int(self.vote_proposal[vid]),"delegate":self.vote_delegate[vid],"support":int(self.vote_support[vid])==1,"action_digest":self.vote_action[vid],"created_at":str(self.vote_created_at[vid])}
+
+    @gl.public.view
+    def get_match(self,rid:u256,index:u256)->dict:
+        if rid<=u256(0) or rid>self.review_count or index>=self.review_match_count[rid]:return {}
+        key=rid*u256(100)+index
+        return {"recipient_id":self.review_match_recipient[key],"organization":self.review_match_organization[key],"role":self.review_match_role[key],"disclosed":int(self.review_match_disclosed[key])==1}
+
+
+Contract = MandateGlassGovernanceGate

@@ -1,17 +1,18 @@
 {
-  "contract_name": "DAODelegateConflictDisclosureGate",
+  "contract_name": "MandateGlassGovernanceGate",
   "contract_file": "contracts/dao_delegate_conflict_gate.py",
   "network": "studionet",
   "rpc_url": "https://studio.genlayer.com/api",
   "constructor_args": [],
-  "source_sha256": "79b5c454722adb7fefc0523ceaf2a2034e3b2e69383a5148e001c16955fcacd6",
-  "source_size_bytes": 23387,
-  "local_security_tests_passed": 32,
-  "sdk_direct_tests_passed": 8,
-  "genvm_method_count": 10,
-  "deployed_address": "0x2C32b1A27C80C81239Ba883812979E2E1b358786",
+  "source_sha256": "da85824a0937e4b826ea64a04c13e3d6b5e680e3abbdefb7718f98cb98f889da",
+  "source_size_bytes": 41667,
+  "local_security_tests_passed": 40,
+  "sdk_direct_tests_passed": 9,
+  "frontend_regression_tests_passed": 7,
+  "genvm_method_count": 15,
+  "deployed_address": "",
   "deployment_tx_hash": "",
   "canonical_fixture_repository": "https://github.com/hathanh6819/DAODelegateConflictEvidenceFixtures",
-  "onchain_review_count": 4,
-  "status": "SOURCE_SCHEMA_AND_LIFECYCLE_VERIFIED"
+  "onchain_review_count": 0,
+  "status": "V2_AWAITING_REDEPLOYMENT"
 }

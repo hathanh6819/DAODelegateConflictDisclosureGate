@@ -2,7 +2,7 @@
 
 Live application: [mandate-glass.pages.dev](https://mandate-glass.pages.dev/)
 
-An Intelligent Contract that decides whether a DAO delegate disclosed canonical active affiliations that semantically match recipients of one specific proposal.
+An Intelligent Contract that decides whether a DAO delegate disclosed canonical active affiliations that semantically match recipients of one specific proposal, then enforces that result on a proposal-bound governance vote.
 
 The design is intentionally narrow. It does not claim to discover private relationships or prove every real-world conflict. It compares three DAO-controlled documents locked in one exact public GitHub snapshot before the vote deadline:
 
@@ -21,7 +21,7 @@ GenLayer is necessary for semantic entity matching such as `Acme Labs`, `Acme Fo
 - `UNDISCLOSED_CONFLICT`: at least one matching relationship was not disclosed.
 - `INSUFFICIENT_EVIDENCE`: acquisition, identity, schema or consensus failed.
 
-Only `CLEAR` and `DISCLOSED_CONFLICT` may create an authorization. The authorization is revision-bound, consumable once, and only the original DAO creator may consume it. The contract has no payout or custody surface.
+Only `CLEAR` and `DISCLOSED_CONFLICT` may create an authorization. Every authorization is bound to the DAO authority, proposal, delegate, target action digest, review revision, proposal revision and expiry. The delegate consumes it atomically inside `execute_vote`; the same transaction records the governance vote and marks the authorization used. Failed scope, identity, expiry, revision, unresolved-evidence and replay checks leave vote accounting unchanged. The contract has no payout or custody surface.
 
 ## Local verification
 
@@ -32,11 +32,12 @@ $env:PYTHONIOENCODING='utf-8'
 genvm-lint check contracts/dao_delegate_conflict_gate.py
 cd frontend
 npm ci
+npm test
 npm run build
 ```
 
 ## Deployment
 
-The verified Studionet deployment is [`0x2C32b1A27C80C81239Ba883812979E2E1b358786`](https://explorer-studio.genlayer.com/address/0x2C32b1A27C80C81239Ba883812979E2E1b358786). It was deployed with no constructor arguments. The production frontend is bound to this address through `frontend/.env.production`; no fallback contract or simulated registry is used.
+Protocol v2 requires a new deployment because its source and schema differ from the earlier registry-only contract. Deploy `contracts/dao_delegate_conflict_gate.py` with no constructor arguments, then verify checksum `da85824a0937e4b826ea64a04c13e3d6b5e680e3abbdefb7718f98cb98f889da`. `frontend/.env.production` intentionally remains blank until that deployment is verified; there is no fallback contract or simulated registry.
 
 Do not represent local Direct Mode results as on-chain proof. Source matching, canonical acquisition, validator consensus, authorization, replay rejection and final state must be verified on the deployed Studionet contract.

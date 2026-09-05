@@ -1,5 +1,16 @@
 # Verification record
 
+> The finalized Studionet transactions below verify the retired registry-only protocol v1. They are retained as historical evidence and must not be presented as verification of protocol v2. Protocol v2 requires a fresh deployment and fresh governance lifecycle transactions.
+
+## Protocol v2 pre-deployment verification
+
+- 40 parser, source-security and governance-enforcement checks passed.
+- 9 real GenLayer SDK Direct Mode tests passed.
+- 7 frontend governance regression tests passed.
+- GenVM lint passed.
+- Production frontend build passed with its contract address intentionally blank.
+- Direct-contract cases cover DAO authority and source revision, proposal and delegate identity, action scope, stale revision, deadline expiry, unresolved-evidence recovery, hidden-conflict blocking, closed-proposal blocking, atomic vote accounting and replay rejection.
+
 ## Automated checks
 
 - Parser and source-security suite: 32 passed.

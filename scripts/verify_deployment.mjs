@@ -5,11 +5,11 @@ import { studionet } from '../frontend/node_modules/genlayer-js/dist/chains/inde
 const address = process.argv[2];
 if (!/^0x[0-9a-fA-F]{40}$/.test(address || '')) throw new Error('Invalid contract address');
 const client = createClient({ chain: studionet });
-const [schema, code, protocol, count] = await Promise.all([
+const [schema, code, protocol, counts] = await Promise.all([
   client.getContractSchema(address),
   client.getContractCode(address),
   client.readContract({ address, functionName: 'get_protocol', args: [], jsonSafeReturn: true }),
-  client.readContract({ address, functionName: 'get_count', args: [], jsonSafeReturn: true }),
+  client.readContract({ address, functionName: 'get_counts', args: [], jsonSafeReturn: true }),
 ]);
 const rawCode = typeof code === 'string' ? code : JSON.stringify(code);
 const source = rawCode.startsWith('0x') ? Buffer.from(rawCode.slice(2), 'hex')
@@ -20,7 +20,7 @@ console.log(JSON.stringify({
   sha256: createHash('sha256').update(source).digest('hex'),
   sourceBytes: source.length,
   protocol,
-  count,
+  counts,
   codeEncoding: rawCode.startsWith('0x') ? 'hex' : rawCode.startsWith('#') ? 'source' : 'base64',
   methodCount: Object.keys(methods).length,
   methodNames: Object.keys(methods).sort(),

@@ -1,5 +1,14 @@
 # Threat model
 
+## Governance enforcement added in protocol v2
+
+- Only the contract owner can enroll a DAO authority; only that exact authority can register proposals or revise the canonical source mapping.
+- A proposal is an on-chain record binding the DAO, external proposal identity, immutable Git commit, exact action SHA-256, voting deadline and proposal revision.
+- A delegate can open a review only for its own address. The contract constructs all evidence URLs from the DAO-controlled mapping and the proposal commit.
+- Authorization binds DAO authority, proposal, delegate, action, review revision, proposal revision and expiry.
+- `execute_vote` validates the complete scope and atomically records the vote and consumes authorization. Any failed check reverts both operations.
+- Undisclosed conflicts and unresolved evidence never reach the authorized state. Closed/expired proposals, stale revisions, changed accounts, wrong actions and replay attempts leave vote accounting unchanged.
+
 ## Trust boundaries
 
 - Interested users may choose workflow inputs but cannot provide arbitrary evidence URLs.
