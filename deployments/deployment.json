@@ -9,10 +9,10 @@
   "local_security_tests_passed": 40,
   "sdk_direct_tests_passed": 9,
   "frontend_regression_tests_passed": 7,
-  "genvm_method_count": 15,
-  "deployed_address": "",
-  "deployment_tx_hash": "",
+  "genvm_method_count": 16,
+  "deployed_address": "0x9A354B54296BBe45Ec8D7600dEbBd5eDf2510DdA",
+  "deployment_tx_hash": "0x5d96f1e1b109b5e1eae11b77af6d62270c3b85fbc64fccb06add73c7c1195724",
   "canonical_fixture_repository": "https://github.com/hathanh6819/DAODelegateConflictEvidenceFixtures",
   "onchain_review_count": 0,
-  "status": "V2_AWAITING_REDEPLOYMENT"
+  "status": "V2_SOURCE_AND_SCHEMA_VERIFIED"
 }

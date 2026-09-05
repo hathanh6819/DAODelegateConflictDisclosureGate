@@ -11,6 +11,15 @@
 - Production frontend build passed with its contract address intentionally blank.
 - Direct-contract cases cover DAO authority and source revision, proposal and delegate identity, action scope, stale revision, deadline expiry, unresolved-evidence recovery, hidden-conflict blocking, closed-proposal blocking, atomic vote accounting and replay rejection.
 
+## Protocol v2 deployment verification
+
+- Contract: [`0x9A354B54296BBe45Ec8D7600dEbBd5eDf2510DdA`](https://explorer-studio.genlayer.com/address/0x9A354B54296BBe45Ec8D7600dEbBd5eDf2510DdA)
+- Deployment: [`0x5d96f1e1b109b5e1eae11b77af6d62270c3b85fbc64fccb06add73c7c1195724`](https://explorer-studio.genlayer.com/tx/0x5d96f1e1b109b5e1eae11b77af6d62270c3b85fbc64fccb06add73c7c1195724)
+- Deployer and contract owner: `0xa365F55A3bf352767bc5c5739FfDDAee8FcF3a19`
+- Deployed source: `41,667` bytes, SHA-256 `da85824a0937e4b826ea64a04c13e3d6b5e680e3abbdefb7718f98cb98f889da`.
+- Schema and protocol: `MandateGlassGovernanceGate` v2, 16 public methods.
+- Initial state: zero DAOs, proposals, reviews and votes.
+
 ## Automated checks
 
 - Parser and source-security suite: 32 passed.
