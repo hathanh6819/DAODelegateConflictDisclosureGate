@@ -13,6 +13,11 @@
   "deployed_address": "0x9A354B54296BBe45Ec8D7600dEbBd5eDf2510DdA",
   "deployment_tx_hash": "0x5d96f1e1b109b5e1eae11b77af6d62270c3b85fbc64fccb06add73c7c1195724",
   "canonical_fixture_repository": "https://github.com/hathanh6819/DAODelegateConflictEvidenceFixtures",
-  "onchain_review_count": 0,
-  "status": "V2_SOURCE_AND_SCHEMA_VERIFIED"
+  "onchain_dao_count": 1,
+  "onchain_proposal_count": 4,
+  "onchain_review_count": 3,
+  "onchain_vote_count": 1,
+  "clear_evidence_digest": "sha256:4c9491a3ee724dc6e7fd51022f613271b33586903bb275ab8aae08523b50f330",
+  "undisclosed_conflict_evidence_digest": "sha256:8498243e15dcebe254ef161c66952c64bb64b38f7c8acd6abc6d0f3a9f1c6367",
+  "status": "V2_LIFECYCLE_AND_ADVERSARIAL_PATHS_VERIFIED"
 }

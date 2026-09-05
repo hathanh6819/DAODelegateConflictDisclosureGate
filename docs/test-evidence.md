@@ -8,7 +8,7 @@
 - 9 real GenLayer SDK Direct Mode tests passed.
 - 7 frontend governance regression tests passed.
 - GenVM lint passed.
-- Production frontend build passed with its contract address intentionally blank.
+- Production frontend build passed and is bound to the verified v2 contract address.
 - Direct-contract cases cover DAO authority and source revision, proposal and delegate identity, action scope, stale revision, deadline expiry, unresolved-evidence recovery, hidden-conflict blocking, closed-proposal blocking, atomic vote accounting and replay rejection.
 
 ## Protocol v2 deployment verification
@@ -19,6 +19,38 @@
 - Deployed source: `41,667` bytes, SHA-256 `da85824a0937e4b826ea64a04c13e3d6b5e680e3abbdefb7718f98cb98f889da`.
 - Schema and protocol: `MandateGlassGovernanceGate` v2, 16 public methods.
 - Initial state: zero DAOs, proposals, reviews and votes.
+
+## Protocol v2 finalized Studionet behavior
+
+The v2 lifecycle checks both the top-level consensus result and the non-idle leader
+receipt. `MAJORITY_AGREE` on an error is recorded as a rejected transaction, never as
+successful execution.
+
+### Clear result, scoped authorization and atomic vote
+
+- Authority registration: [`0xa90854e8df05a1b2288a593e5d77b8921357487da10a93bcf10b40cfadd2f1f2`](https://explorer-studio.genlayer.com/tx/0xa90854e8df05a1b2288a593e5d77b8921357487da10a93bcf10b40cfadd2f1f2)
+- Proposal #3, locked to fixture commit [`ef4842d0724efe027134bafd856354a8db03872b`](https://github.com/hathanh6819/DAODelegateConflictEvidenceFixtures/tree/ef4842d0724efe027134bafd856354a8db03872b): [`0x0c6aff690d8ad0c4d35af8d23712f74b5450f251fe14bc277cd0c8830672af1a`](https://explorer-studio.genlayer.com/tx/0x0c6aff690d8ad0c4d35af8d23712f74b5450f251fe14bc277cd0c8830672af1a)
+- [Open review #1](https://explorer-studio.genlayer.com/tx/0x959ad51c65dc0f78c85504bbea49c4bbc94d4bed2177f61d7f85d560c6b74e7a)
+- [Canonical evaluation](https://explorer-studio.genlayer.com/tx/0x1876d598c7c82058afdabb57e5b792f918917703d59f73d900a3b299786ae123): `CLEAR`, evidence `sha256:4c9491a3ee724dc6e7fd51022f613271b33586903bb275ab8aae08523b50f330`.
+- [Issue scoped authorization](https://explorer-studio.genlayer.com/tx/0x073340b1e87ccf123c1d72390551ea4347ffd93a089171adec7c5a9d9b6444b1)
+- [Atomic FOR vote and consumption](https://explorer-studio.genlayer.com/tx/0x3c65b33bf85d4e15e0b24fadf2d66049fab367b22856411c092a5fffbdc9d020): review state `CONSUMED`, `authorization_consumed=1`, vote count `1`.
+- [Replay attempt](https://explorer-studio.genlayer.com/tx/0xbbe40dd82630b3bd475e30da1fc725a04e0077ec4ceb0ec3c603cfe1909d4004): agreed `ERROR / NOT_AUTHORIZED`; all counts unchanged.
+
+### Identity mismatch, unresolved retry and blocked authorization
+
+- [Open adversarial review #2](https://explorer-studio.genlayer.com/tx/0x2b273b251db0bbd27cc7ef986673c028ad022ed96fb10a7aef38a07ca736a389)
+- [Canonical evaluation](https://explorer-studio.genlayer.com/tx/0xe945423a86cecbc9d4cf1748ef0cd983e191de06c8a49f9c0b5d8144deb709f5): `UNRESOLVED / DELEGATE_NOT_IN_REGISTRY`, no digest and no authorization scope.
+- [Rejected authorization](https://explorer-studio.genlayer.com/tx/0x0a907c10325b16f00ff249120d59b07a1c997d694f90fe523fc1dfa3f7acb36a): agreed `ERROR / INVALID_REVIEW_STATE`; counts unchanged.
+- [Retry](https://explorer-studio.genlayer.com/tx/0x751587d813f3ed34156328fb67fa910abb60531eb1519bcb8a47822300b3285b): retry count advanced to `1`, while the unresolved identity mismatch remained fail-closed and vote count stayed `1`.
+
+### Undisclosed conflict blocks the governance path
+
+- Proposal #4: [`0x05918bfaba0dfac53465ff83f93b65a93e29dd500a19dd5fc8a1226d62418771`](https://explorer-studio.genlayer.com/tx/0x05918bfaba0dfac53465ff83f93b65a93e29dd500a19dd5fc8a1226d62418771), locked to immutable fixture [`4ebd44c76a0c86f35537cef8ef0b9f6bd72b4f08`](https://github.com/hathanh6819/DAODelegateConflictEvidenceFixtures/tree/4ebd44c76a0c86f35537cef8ef0b9f6bd72b4f08).
+- [Open review #3](https://explorer-studio.genlayer.com/tx/0x702bc361908b4615a90c48b6d6399776cad1494e8252e15d836baef6d1a3f974)
+- [Canonical evaluation](https://explorer-studio.genlayer.com/tx/0x82ee384e935bc2b05da17bbf31868e6be472f6496c2c084ec696e3b5cf3480af): `UNDISCLOSED_CONFLICT`, one undisclosed `Acme Labs / Advisor` match, evidence `sha256:8498243e15dcebe254ef161c66952c64bb64b38f7c8acd6abc6d0f3a9f1c6367`.
+- [Rejected authorization](https://explorer-studio.genlayer.com/tx/0xbf9d489a948565b3685dfaafe6844f05fca54db70fd3ca5714921d04207e1f3c): agreed `ERROR / VERDICT_NOT_AUTHORIZABLE`; review and accounting remained unchanged, with zero scope and total vote count `1`.
+
+Final v2 state after these checks: `1 DAO / 4 proposals / 3 reviews / 1 vote`.
 
 ## Automated checks
 
