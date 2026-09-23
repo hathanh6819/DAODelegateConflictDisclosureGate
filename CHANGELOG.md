@@ -21,3 +21,5 @@
 ### Deployment status
 
 Protocol v3 is deployed at `0xbd391006807E5cae85E26E50187F4CC2178c7C9c`. On-chain source checksum, protocol identity, security profile, and all 16 methods match this release. A new lifecycle evidence run remains pending.
+
+The protocol v3 frontend is deployed at [mandate-glass.vercel.app](https://mandate-glass.vercel.app/), built from the verified production address configuration.

@@ -1,6 +1,6 @@
 # DAO Delegate Conflict Disclosure Gate
 
-Live application: [mandate-glass.pages.dev](https://mandate-glass.pages.dev/)
+Live application: [mandate-glass.vercel.app](https://mandate-glass.vercel.app/)
 
 An Intelligent Contract that decides whether a DAO delegate disclosed canonical active affiliations that semantically match recipients of one specific proposal, then enforces that result on a proposal-bound governance vote.
 

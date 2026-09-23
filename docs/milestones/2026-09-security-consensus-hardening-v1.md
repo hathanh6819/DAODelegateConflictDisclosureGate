@@ -44,5 +44,7 @@ npm run build
 - Verified security profile: `CANARY_AND_CANONICAL_GROUNDING`
 - Verified schema: 16 methods
 - Production frontend environment points exclusively to the v3 address.
+- Live protocol v3 frontend: [mandate-glass.vercel.app](https://mandate-glass.vercel.app/)
+- Vercel production deployment: `dpl_41NDvSUyktKuKsgvBZVFxJHEU5x6` (`READY`, HTTP 200 verified)
 
 The fresh deployment has zero DAO/proposal/review/vote records. Lifecycle and adversarial Studionet transactions are intentionally tracked as the next evidence step rather than claimed here.
