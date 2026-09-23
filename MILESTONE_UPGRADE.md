@@ -60,7 +60,7 @@ All five cases fail closed before authorization can be issued.
 | Deterministic output-grounding dimensions | 0 | 2 |
 | Evidence-bound canaries per evaluation | 0 | 1 |
 | Production contract methods verified | 16 | 16 |
-| Security/parser tests | 40 | 47 |
+| Security/parser tests | 40 | 49 |
 | GenLayer SDK Direct Mode tests | 9 | 9 |
 | Frontend regression tests | 7 | 7 |
 | Protocol version | 2 | 3 |
@@ -70,7 +70,7 @@ All five cases fail closed before authorization can be issued.
 The milestone was verified with the following results:
 
 ```text
-pytest tests:          47 passed
+pytest tests:          49 passed
 pytest runtime_tests:  9 passed
 frontend tests:        7 passed
 frontend build:        passed

@@ -84,6 +84,17 @@ def test_sha_is_exactly_40_lower_hex():
     assert not contract._sha40("a" * 39)
 
 
+def test_studio_decimal_address_is_normalized_to_hex():
+    expected = "0x1d283b45974b0be9630dfd1dec6a62a9b72b2760"
+    assert contract._address(str(int(expected, 16))) == expected
+
+
+def test_address_as_hex_runtime_shape_is_normalized():
+    class StudioAddress:
+        as_hex = "0x1D283b45974B0be9630DFD1deC6A62a9B72B2760"
+    assert contract._address(StudioAddress()) == "0x1d283b45974b0be9630dfd1dec6a62a9b72b2760"
+
+
 def decision_bundle(verdict="DISCLOSED_CONFLICT", matches=None, canary=None):
     digest = "sha256:" + "a" * 64
     expected = "MANDATE_GLASS_" + "a" * 16

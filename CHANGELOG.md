@@ -9,10 +9,11 @@
 - Removed public decorators from the retained v1 migration reference so GenVM schema discovery exposes only `MandateGlassGovernanceGate` (16 methods).
 - Added five adversarial injection/hallucination vectors plus positive grounding coverage.
 - Upgraded the frontend identity gate and visible network banner from protocol v2 to hardened protocol v3.
+- Added cross-runtime address normalization for `Address.as_hex`, hexadecimal strings, and Studio's decimal calldata representation after live owner-call verification exposed the incompatibility.
 
 ### Verification
 
-- 47 parser/security tests pass.
+- 49 parser/security tests pass.
 - 9 real GenLayer SDK Direct Mode tests pass.
 - 7 frontend regression tests pass.
 - Production frontend build passes.

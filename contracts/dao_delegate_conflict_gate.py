@@ -67,6 +67,22 @@ def _address_text(value: str) -> bool:
             and value != ZERO_ADDRESS)
 
 
+def _address(value) -> str:
+    """Normalize GenVM Address values across Studio and Direct Mode runtimes."""
+    try:
+        raw = value.as_hex
+    except Exception:
+        raw = str(value)
+    if callable(raw):
+        raw = raw()
+    text = str(raw).strip().lower()
+    if text.startswith("0x"):
+        return "0x" + text[2:].zfill(40)
+    if text.isdigit():
+        return "0x" + format(int(text), "040x")
+    return text
+
+
 def _string(value, limit: int) -> bool:
     return isinstance(value, str) and 0 < len(value.strip()) <= limit
 
@@ -322,7 +338,7 @@ class _LegacyRegistryReference:
         sha = snapshot_commit.strip().lower()
         paths = (proposal_path.strip(), registry_path.strip(), disclosure_path.strip())
         pid = proposal_id.strip()
-        delegate_text = str(delegate).lower()
+        delegate_text = _address(delegate)
         policy_text = policy.strip()
         now = _now()
         if not _repo(repo): raise gl.vm.UserError("INVALID_REPOSITORY")
@@ -334,7 +350,7 @@ class _LegacyRegistryReference:
         deadline = int(vote_deadline)
         if deadline <= now or deadline > now + 2592000: raise gl.vm.UserError("INVALID_VOTE_DEADLINE")
         new_id = self.review_count + u256(1)
-        self.creator[new_id] = str(gl.message.sender_address)
+        self.creator[new_id] = _address(gl.message.sender_address)
         self.repository[new_id] = repo
         self.snapshot_commit[new_id] = sha
         self.proposal_path[new_id], self.registry_path[new_id], self.disclosure_path[new_id] = paths
@@ -421,7 +437,7 @@ class _LegacyRegistryReference:
 
     def consume_authorization(self, review_id: u256, expected_revision: u256) -> u256:
         if review_id <= u256(0) or review_id > self.review_count: raise gl.vm.UserError("INVALID_REVIEW_ID")
-        if str(gl.message.sender_address).lower() != self.creator[review_id].lower(): raise gl.vm.UserError("ONLY_DAO_CREATOR")
+        if _address(gl.message.sender_address) != self.creator[review_id].lower(): raise gl.vm.UserError("ONLY_DAO_CREATOR")
         if int(self.state[review_id]) != AUTHORIZED: raise gl.vm.UserError("NOT_AUTHORIZED")
         if expected_revision != self.revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
         if int(self.authorization_consumed[review_id]) == 1: raise gl.vm.UserError("AUTHORIZATION_ALREADY_CONSUMED")
@@ -431,7 +447,7 @@ class _LegacyRegistryReference:
 
     def cancel_pending(self, review_id: u256) -> u256:
         if review_id <= u256(0) or review_id > self.review_count: raise gl.vm.UserError("INVALID_REVIEW_ID")
-        if str(gl.message.sender_address).lower() != self.creator[review_id].lower(): raise gl.vm.UserError("ONLY_DAO_CREATOR")
+        if _address(gl.message.sender_address) != self.creator[review_id].lower(): raise gl.vm.UserError("ONLY_DAO_CREATOR")
         if int(self.state[review_id]) != PENDING: raise gl.vm.UserError("ONLY_PENDING_CAN_CANCEL")
         self.state[review_id] = u256(CANCELLED)
         return review_id
@@ -514,18 +530,18 @@ class MandateGlassGovernanceGate(gl.Contract):
     vote_created_at: TreeMap[u256, u256]
 
     def __init__(self):
-        self.owner = str(gl.message.sender_address).lower()
+        self.owner = _address(gl.message.sender_address)
         self.dao_count = u256(0)
         self.proposal_count = u256(0)
         self.review_count = u256(0)
         self.vote_count = u256(0)
 
     def _owner_only(self):
-        if str(gl.message.sender_address).lower() != self.owner: raise gl.vm.UserError("ONLY_OWNER")
+        if _address(gl.message.sender_address) != self.owner: raise gl.vm.UserError("ONLY_OWNER")
 
     def _dao_authority_only(self, dao_id: u256):
         if dao_id <= u256(0) or dao_id > self.dao_count or int(self.dao_active[dao_id]) != 1: raise gl.vm.UserError("INVALID_DAO")
-        if str(gl.message.sender_address).lower() != self.dao_authority[dao_id]: raise gl.vm.UserError("ONLY_DAO_AUTHORITY")
+        if _address(gl.message.sender_address) != self.dao_authority[dao_id]: raise gl.vm.UserError("ONLY_DAO_AUTHORITY")
 
     def _scope(self, dao_id: u256, proposal_id: u256, delegate: str, action: str,
                review_revision: u256, proposal_revision: u256, expiry: u256) -> str:
@@ -538,7 +554,7 @@ class MandateGlassGovernanceGate(gl.Contract):
     def register_dao(self, authority: Address, repository: str, proposal_path: str,
                      registry_path: str, disclosure_path: str, policy: str) -> u256:
         self._owner_only()
-        auth, repo = str(authority).lower(), repository.strip()
+        auth, repo = _address(authority), repository.strip()
         paths = (proposal_path.strip(), registry_path.strip(), disclosure_path.strip())
         if not _address_text(auth): raise gl.vm.UserError("INVALID_DAO_AUTHORITY")
         if not _repo(repo): raise gl.vm.UserError("INVALID_REPOSITORY")
@@ -595,8 +611,8 @@ class MandateGlassGovernanceGate(gl.Contract):
     @gl.public.write
     def create_review(self, proposal_id: u256, delegate: Address) -> u256:
         if proposal_id <= u256(0) or proposal_id > self.proposal_count or int(self.proposal_open[proposal_id]) != 1: raise gl.vm.UserError("PROPOSAL_NOT_OPEN")
-        delegate_text = str(delegate).lower()
-        if str(gl.message.sender_address).lower() != delegate_text: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
+        delegate_text = _address(delegate)
+        if _address(gl.message.sender_address) != delegate_text: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
         if _now() > int(self.proposal_deadline[proposal_id]): raise gl.vm.UserError("VOTE_DEADLINE_PASSED")
         rid = self.review_count + u256(1)
         self.review_proposal[rid], self.review_delegate[rid] = proposal_id, delegate_text
@@ -667,7 +683,7 @@ class MandateGlassGovernanceGate(gl.Contract):
         if review_id<=u256(0) or review_id>self.review_count or int(self.review_state[review_id])!=AUTHORIZED: raise gl.vm.UserError("NOT_AUTHORIZED")
         if expected_revision!=self.review_revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
         delegate=self.review_delegate[review_id]
-        if str(gl.message.sender_address).lower()!=delegate: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
+        if _address(gl.message.sender_address)!=delegate: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
         pid=self.review_proposal[review_id];dao_id=self.proposal_dao[pid];action=action_digest.strip().lower()
         if int(self.proposal_open[pid])!=1 or _now()>int(self.proposal_deadline[pid]): raise gl.vm.UserError("VOTE_WINDOW_CLOSED")
         if action!=self.proposal_action[pid]: raise gl.vm.UserError("ACTION_SCOPE_MISMATCH")
