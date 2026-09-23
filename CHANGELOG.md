@@ -20,4 +20,4 @@
 
 ### Deployment status
 
-Protocol v3 changes contract execution semantics and requires a new Studionet deployment. The existing v2 address remains the production address until the v3 deployment is finalized and independently verified.
+Protocol v3 is deployed at `0xbd391006807E5cae85E26E50187F4CC2178c7C9c`. On-chain source checksum, protocol identity, security profile, and all 16 methods match this release. A new lifecycle evidence run remains pending.

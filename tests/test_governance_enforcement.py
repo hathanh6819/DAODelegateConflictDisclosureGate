@@ -2,7 +2,7 @@ from pathlib import Path
 
 SOURCE=(Path(__file__).parents[1]/"contracts"/"dao_delegate_conflict_gate.py").read_text()
 
-def test_v2_contract_is_deployment_target():
+def test_v3_contract_is_deployment_target():
     assert "Contract = MandateGlassGovernanceGate" in SOURCE
     assert '"name":"MandateGlassGovernanceGate","version":PROTOCOL_VERSION' in SOURCE
 

@@ -18,7 +18,7 @@ GenLayer is necessary for semantic entity matching such as `Acme Labs`, `Acme Fo
 
 The next release adds an evidence-bound prompt-injection canary and deterministic canonical grounding for every model-produced match. Five adversarial injection/hallucination vectors now fail closed, and GenVM schema discovery is isolated to the 16-method governance gate. See [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), and the [milestone evidence record](docs/milestones/2026-09-security-consensus-hardening-v1.md).
 
-Protocol v3 requires a new Studionet deployment. Until that deployment is finalized and verified, the public application remains pinned to the verified v2 address below.
+Protocol v3 is deployed on Studionet with source, schema, identity and security profile independently verified. The fresh deployment intentionally starts with empty governance state; lifecycle evidence will be recorded separately.
 
 ## Verdicts
 
@@ -44,6 +44,6 @@ npm run build
 
 ## Deployment
 
-Protocol v2 is deployed on Studionet at [`0x9A354B54296BBe45Ec8D7600dEbBd5eDf2510DdA`](https://explorer-studio.genlayer.com/address/0x9A354B54296BBe45Ec8D7600dEbBd5eDf2510DdA). Its deployed source matches checksum `da85824a0937e4b826ea64a04c13e3d6b5e680e3abbdefb7718f98cb98f889da`, protocol identity `MandateGlassGovernanceGate` v2, and all 16 public methods. The frontend is bound only to this verified address; there is no fallback contract or simulated registry.
+Protocol v3 is deployed on Studionet at [`0xbd391006807E5cae85E26E50187F4CC2178c7C9c`](https://explorer-studio.genlayer.com/address/0xbd391006807E5cae85E26E50187F4CC2178c7C9c). Its deployed source matches checksum `e63aea8df2fdfbb7cecaa66ac393894192ca1b33ec2330e86171454a3b3d0a76`, protocol identity `MandateGlassGovernanceGate` v3, security profile `CANARY_AND_CANONICAL_GROUNDING`, and all 16 public methods. The frontend is bound only to this verified address; there is no fallback contract or simulated registry. The retired v2 deployment remains documented in [`deployments/deployment-v2.json`](deployments/deployment-v2.json).
 
 Do not represent local Direct Mode results as on-chain proof. Source matching, canonical acquisition, validator consensus, authorization, replay rejection and final state must be verified on the deployed Studionet contract.

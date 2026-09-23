@@ -36,6 +36,13 @@ npm test
 npm run build
 ```
 
-## Deployment requirement
+## Deployment evidence
 
-This milestone changes contract semantics and protocol identity from v2 to v3. It requires a new Studionet deployment, source checksum verification, lifecycle/adversarial transactions, an updated `deployments/deployment.json`, and a new `VITE_CONTRACT_ADDRESS` before the live frontend can expose the feature.
+- Studionet contract: [`0xbd391006807E5cae85E26E50187F4CC2178c7C9c`](https://explorer-studio.genlayer.com/address/0xbd391006807E5cae85E26E50187F4CC2178c7C9c)
+- Source SHA-256: `e63aea8df2fdfbb7cecaa66ac393894192ca1b33ec2330e86171454a3b3d0a76`
+- Verified identity: `MandateGlassGovernanceGate` protocol v3
+- Verified security profile: `CANARY_AND_CANONICAL_GROUNDING`
+- Verified schema: 16 methods
+- Production frontend environment points exclusively to the v3 address.
+
+The fresh deployment has zero DAO/proposal/review/vote records. Lifecycle and adversarial Studionet transactions are intentionally tracked as the next evidence step rather than claimed here.
