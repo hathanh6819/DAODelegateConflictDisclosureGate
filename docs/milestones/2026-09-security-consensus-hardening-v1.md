@@ -38,8 +38,8 @@ npm run build
 
 ## Deployment evidence
 
-- Studionet contract: [`0xbd391006807E5cae85E26E50187F4CC2178c7C9c`](https://explorer-studio.genlayer.com/address/0xbd391006807E5cae85E26E50187F4CC2178c7C9c)
-- Source SHA-256: `e63aea8df2fdfbb7cecaa66ac393894192ca1b33ec2330e86171454a3b3d0a76`
+- Studionet contract: [`0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`](https://explorer-studio.genlayer.com/address/0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1)
+- Source SHA-256: `c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2`
 - Verified identity: `MandateGlassGovernanceGate` protocol v3
 - Verified security profile: `CANARY_AND_CANONICAL_GROUNDING`
 - Verified schema: 16 methods
@@ -47,4 +47,4 @@ npm run build
 - Live protocol v3 frontend: [mandate-glass.vercel.app](https://mandate-glass.vercel.app/)
 - Vercel production deployment: `dpl_41NDvSUyktKuKsgvBZVFxJHEU5x6` (`READY`, HTTP 200 verified)
 
-The fresh deployment has zero DAO/proposal/review/vote records. Lifecycle and adversarial Studionet transactions are intentionally tracked as the next evidence step rather than claimed here.
+Final state is `1 DAO / 2 proposals / 2 reviews / 1 vote`. The Studionet lifecycle verifies a grounded clear verdict, scoped authorization, atomic vote consumption, and fail-closed rejection of impersonation, wrong action scope, replay, and undisclosed-conflict authorization. Transaction links are collected in [`MILESTONE_UPGRADE.md`](../../MILESTONE_UPGRADE.md).

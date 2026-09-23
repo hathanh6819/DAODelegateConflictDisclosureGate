@@ -21,6 +21,6 @@
 
 ### Deployment status
 
-Protocol v3 is deployed at `0xbd391006807E5cae85E26E50187F4CC2178c7C9c`. On-chain source checksum, protocol identity, security profile, and all 16 methods match this release. A new lifecycle evidence run remains pending.
+Protocol v3 is deployed at `0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`. On-chain source checksum, protocol identity, security profile, and all 16 methods match this release. The finalized lifecycle verifies a guarded atomic vote and four adversarial rejection paths, ending at `1 DAO / 2 proposals / 2 reviews / 1 vote`.
 
 The protocol v3 frontend is deployed at [mandate-glass.vercel.app](https://mandate-glass.vercel.app/), built from the verified production address configuration.

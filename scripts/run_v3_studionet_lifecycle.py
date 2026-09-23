@@ -9,7 +9,7 @@ from genlayer_py import create_account, create_client, studionet
 from genlayer_py.types.transactions import TransactionStatus
 
 
-CONTRACT = "0xbd391006807E5cae85E26E50187F4CC2178c7C9c"
+CONTRACT = "0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1"
 AUTHORITY = "0x1D283b45974B0be9630DFD1deC6A62a9B72B2760"
 OUTSIDER = "0xf96Cf822F9f4e76956AB9fAAa22B3BdCD7b10aD6"
 REPOSITORY = "hathanh6819/DAODelegateConflictEvidenceFixtures"
@@ -77,13 +77,13 @@ def main():
     protocol = read(a, "get_protocol")
     checkpoint(protocol.get("version") == 3, "protocol v3")
     checkpoint(protocol.get("security_profile") == "CANARY_AND_CANONICAL_GROUNDING", "security profile")
-    checkpoint(read(a, "get_counts") == {"daos": 0, "proposals": 0, "reviews": 0, "votes": 0}, "fresh deployment")
+    initial = read(a, "get_counts")
+    checkpoint(initial == {"daos": 1, "proposals": 0, "reviews": 0, "votes": 0}, "owner registered DAO only")
 
-    txs = {}
-    txs["register_dao"] = write(a, "register_dao", "register_dao", [
-        AUTHORITY, REPOSITORY, "proposal.json", "affiliations.json", "disclosure.json", POLICY,
-    ])
-    checkpoint(read(a, "get_dao", [1])["authority"].lower() == AUTHORITY.lower(), "DAO authority bound")
+    txs = {"register_dao": "0x326ce9b924f934bc850f06496afd4b55bbea1c594283df736e1794e9c9210d98"}
+    dao = read(a, "get_dao", [1])
+    checkpoint(dao["authority"].lower() == AUTHORITY.lower(), "DAO authority bound")
+    checkpoint(dao["repository"] == REPOSITORY and dao["active"] is True, "canonical source bound")
 
     deadline = int(time.time()) + 7 * 24 * 60 * 60
     clear_action = action("mandate-glass-v3-clear-vote")

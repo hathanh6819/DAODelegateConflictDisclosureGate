@@ -44,6 +44,6 @@ npm run build
 
 ## Deployment
 
-Protocol v3 is deployed on Studionet at [`0xbd391006807E5cae85E26E50187F4CC2178c7C9c`](https://explorer-studio.genlayer.com/address/0xbd391006807E5cae85E26E50187F4CC2178c7C9c). Its deployed source matches checksum `e63aea8df2fdfbb7cecaa66ac393894192ca1b33ec2330e86171454a3b3d0a76`, protocol identity `MandateGlassGovernanceGate` v3, security profile `CANARY_AND_CANONICAL_GROUNDING`, and all 16 public methods. The frontend is bound only to this verified address; there is no fallback contract or simulated registry. The retired v2 deployment remains documented in [`deployments/deployment-v2.json`](deployments/deployment-v2.json).
+Protocol v3 is deployed on Studionet at [`0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`](https://explorer-studio.genlayer.com/address/0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1). Its deployed source matches checksum `c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2`, protocol identity `MandateGlassGovernanceGate` v3, security profile `CANARY_AND_CANONICAL_GROUNDING`, and all 16 public methods. The finalized lifecycle verifies one atomic guarded vote plus impersonation, wrong-action, replay and undisclosed-conflict rejection. The frontend is bound only to this verified address.
 
 Do not represent local Direct Mode results as on-chain proof. Source matching, canonical acquisition, validator consensus, authorization, replay rejection and final state must be verified on the deployed Studionet contract.

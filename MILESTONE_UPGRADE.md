@@ -82,7 +82,7 @@ Public methods:        16 (7 view, 9 write)
 The deployed source was independently read back from Studionet. Its SHA-256 checksum matches the local contract source byte-for-byte:
 
 ```text
-e63aea8df2fdfbb7cecaa66ac393894192ca1b33ec2330e86171454a3b3d0a76
+c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2
 ```
 
 The verified on-chain identity is:
@@ -102,12 +102,23 @@ The verified on-chain identity is:
 ## Deployment evidence
 
 - **Live application:** [https://mandate-glass.vercel.app/](https://mandate-glass.vercel.app/)
-- **Studionet contract:** [`0xbd391006807E5cae85E26E50187F4CC2178c7C9c`](https://explorer-studio.genlayer.com/address/0xbd391006807E5cae85E26E50187F4CC2178c7C9c)
-- **Source checksum:** `e63aea8df2fdfbb7cecaa66ac393894192ca1b33ec2330e86171454a3b3d0a76`
+- **Studionet contract:** [`0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`](https://explorer-studio.genlayer.com/address/0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1)
+- **Source checksum:** `c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2`
 - **Vercel production deployment:** `dpl_41NDvSUyktKuKsgvBZVFxJHEU5x6`
 - **Deployment status:** source, schema, identity, security profile, and production frontend verified
 
-The v3 deployment intentionally began with empty governance state. New lifecycle and adversarial Studionet transactions are tracked separately and are not claimed as part of this completed security milestone.
+The finalized v3 lifecycle ends at `1 DAO / 2 proposals / 2 reviews / 1 vote`. It proves a grounded `CLEAR` verdict, scoped authorization and atomic vote consumption, plus fail-closed rejection of delegate impersonation, wrong action scope, replay and an `UNDISCLOSED_CONFLICT` authorization attempt.
+
+### Finalized lifecycle transactions
+
+- [Register DAO](https://explorer-studio.genlayer.com/tx/0x326ce9b924f934bc850f06496afd4b55bbea1c594283df736e1794e9c9210d98)
+- [Evaluate CLEAR evidence](https://explorer-studio.genlayer.com/tx/0x6ea6dfe75025a1554618701b96da43a6af737f2f9eaf03c22f9d0404801b07b4)
+- [Issue scoped authorization](https://explorer-studio.genlayer.com/tx/0x680e02e1bc6966fd369c64f485509cd3841a80a0e09005b20943e34cf35ed145)
+- [Atomic guarded vote](https://explorer-studio.genlayer.com/tx/0x2d20a7c3f77bc29a8013e7ed6dec2450802877a2182b5283908be23d0907c045)
+- [Wrong action rejected](https://explorer-studio.genlayer.com/tx/0x14d95b2f3b347dea59714c00f54884ae590f9843bf885b634c26a0ab8c926229)
+- [Replay rejected](https://explorer-studio.genlayer.com/tx/0xbbaa7fcb73a4e1cf14000df2ec34a158251f7c0fc36fe528b114f1a556eab576)
+- [Evaluate undisclosed conflict](https://explorer-studio.genlayer.com/tx/0x6e4486a656601d8677199b7c363571109778b30db2e0e1ddfe3be3471643820f)
+- [Undisclosed authorization rejected](https://explorer-studio.genlayer.com/tx/0x54437351cbcc8cc1392132335ad6b3b249554c625b0c2a4875ef4a27762816f5)
 
 ## Code and evidence links
 
