@@ -104,7 +104,7 @@ The verified on-chain identity is:
 - **Live application:** [https://mandate-glass.vercel.app/](https://mandate-glass.vercel.app/)
 - **Studionet contract:** [`0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`](https://explorer-studio.genlayer.com/address/0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1)
 - **Source checksum:** `c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2`
-- **Vercel production deployment:** `dpl_41NDvSUyktKuKsgvBZVFxJHEU5x6`
+- **Vercel production deployment:** `dpl_6p6Wo2LgLeHmsCP6jMWFQYVy1Cij`
 - **Deployment status:** source, schema, identity, security profile, and production frontend verified
 
 The finalized v3 lifecycle ends at `1 DAO / 2 proposals / 2 reviews / 1 vote`. It proves a grounded `CLEAR` verdict, scoped authorization and atomic vote consumption, plus fail-closed rejection of delegate impersonation, wrong action scope, replay and an `UNDISCLOSED_CONFLICT` authorization attempt.
