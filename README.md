@@ -46,4 +46,6 @@ npm run build
 
 Protocol v3 is deployed on Studionet at [`0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`](https://explorer-studio.genlayer.com/address/0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1). Its deployed source matches checksum `c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2`, protocol identity `MandateGlassGovernanceGate` v3, security profile `CANARY_AND_CANONICAL_GROUNDING`, and all 16 public methods. The finalized lifecycle verifies one atomic guarded vote plus impersonation, wrong-action, replay and undisclosed-conflict rejection. The frontend is bound only to this verified address.
 
+See the complete [live Studionet E2E evidence ledger](docs/LIVE_E2E_V3.md).
+
 Do not represent local Direct Mode results as on-chain proof. Source matching, canonical acquisition, validator consensus, authorization, replay rejection and final state must be verified on the deployed Studionet contract.

@@ -129,6 +129,7 @@ The finalized v3 lifecycle ends at `1 DAO / 2 proposals / 2 reviews / 1 vote`. I
 - [Deployment record](https://github.com/hathanh6819/DAODelegateConflictDisclosureGate/blob/main/deployments/deployment.json)
 - [Changelog](https://github.com/hathanh6819/DAODelegateConflictDisclosureGate/blob/main/CHANGELOG.md)
 - [Detailed milestone record](https://github.com/hathanh6819/DAODelegateConflictDisclosureGate/blob/main/docs/milestones/2026-09-security-consensus-hardening-v1.md)
+- [Live Studionet E2E evidence](https://github.com/hathanh6819/DAODelegateConflictDisclosureGate/blob/main/docs/LIVE_E2E_V3.md)
 
 ## Reproduction commands
 
