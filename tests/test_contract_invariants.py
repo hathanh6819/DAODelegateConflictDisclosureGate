@@ -37,7 +37,14 @@ def test_retry_is_bounded():
 
 def test_match_order_is_canonical():
     assert "MATCH_ORDER_INVALID" in SOURCE
-    assert "ordered_keys != sorted(ordered_keys)" in SOURCE
+    assert "keys != sorted(keys)" in SOURCE
+
+
+def test_prompt_injection_canary_and_grounding_are_enforced():
+    assert "PROMPT_INJECTION_CANARY_MISMATCH" in SOURCE
+    assert "MATCH_RECIPIENT_NOT_GROUNDED" in SOURCE
+    assert "MATCH_RELATIONSHIP_NOT_GROUNDED" in SOURCE
+    assert "CANARY_AND_CANONICAL_GROUNDING" in SOURCE
 
 
 def test_no_value_custody_surface():

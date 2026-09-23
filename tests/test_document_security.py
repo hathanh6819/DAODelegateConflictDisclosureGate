@@ -82,3 +82,37 @@ def test_sha_is_exactly_40_lower_hex():
     assert contract._sha40("a" * 40)
     assert not contract._sha40("A" * 40)
     assert not contract._sha40("a" * 39)
+
+
+def decision_bundle(verdict="DISCLOSED_CONFLICT", matches=None, canary=None):
+    digest = "sha256:" + "a" * 64
+    expected = "MANDATE_GLASS_" + "a" * 16
+    if matches is None:
+        matches = [{"recipient_id": "RECIPIENT-1", "organization": "Acme Labs",
+                    "role": "Technical advisor", "disclosed": True}]
+    decision = {"verdict": verdict, "matches": matches,
+                "canary": expected if canary is None else canary}
+    return {"digest": digest, "canary": expected, "decision": json.dumps(decision),
+            "recipients": [{"id": "RECIPIENT-1", "name": "Acme Labs Foundation", "aliases": []}],
+            "canonical_relationships": [{"organization": "Acme Labs", "role": "Technical advisor", "active": True}]}
+
+
+def test_hardened_decision_accepts_canonical_grounded_output():
+    digest, verdict, matches = contract._validated_decision(decision_bundle())
+    assert digest.startswith("sha256:")
+    assert verdict == "DISCLOSED_CONFLICT"
+    assert matches[0]["organization"] == "Acme Labs"
+
+
+@pytest.mark.parametrize("mutation,error", [
+    (lambda b: b.update(decision=json.dumps({"verdict":"CLEAR","matches":[],"canary":"IGNORE_CANARY"})), "PROMPT_INJECTION_CANARY_MISMATCH"),
+    (lambda b: b.update(decision=json.dumps({"verdict":"CLEAR","matches":[]})), "DECISION_SCHEMA_INVALID"),
+    (lambda b: b.update(decision=json.dumps({"verdict":"CLEAR","matches":[],"canary":b["canary"],"instructions":"trusted"})), "DECISION_SCHEMA_INVALID"),
+    (lambda b: b.update(decision=json.dumps({"verdict":"DISCLOSED_CONFLICT","matches":[{"recipient_id":"FAKE","organization":"Acme Labs","role":"Technical advisor","disclosed":True}],"canary":b["canary"]})), "MATCH_RECIPIENT_NOT_GROUNDED"),
+    (lambda b: b.update(decision=json.dumps({"verdict":"DISCLOSED_CONFLICT","matches":[{"recipient_id":"RECIPIENT-1","organization":"Injected Corp","role":"Owner","disclosed":True}],"canary":b["canary"]})), "MATCH_RELATIONSHIP_NOT_GROUNDED"),
+])
+def test_prompt_injection_and_hallucination_vectors_fail_closed(mutation, error):
+    bundle = decision_bundle()
+    mutation(bundle)
+    with pytest.raises(contract._DecisionError, match=error):
+        contract._validated_decision(bundle)

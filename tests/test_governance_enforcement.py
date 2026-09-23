@@ -4,7 +4,7 @@ SOURCE=(Path(__file__).parents[1]/"contracts"/"dao_delegate_conflict_gate.py").r
 
 def test_v2_contract_is_deployment_target():
     assert "Contract = MandateGlassGovernanceGate" in SOURCE
-    assert '"name":"MandateGlassGovernanceGate","version":2' in SOURCE
+    assert '"name":"MandateGlassGovernanceGate","version":PROTOCOL_VERSION' in SOURCE
 
 def test_authority_controls_canonical_sources():
     assert "ONLY_DAO_AUTHORITY" in SOURCE

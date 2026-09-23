@@ -14,6 +14,12 @@ Validators construct GitHub endpoints from stored fields, fetch the exact commit
 
 GenLayer is necessary for semantic entity matching such as `Acme Labs`, `Acme Foundation` and `Acme Labs Foundation`. The model output is structurally bounded and validator consensus must agree on the complete verdict and match list. Missing, malformed, oversized or inconsistent evidence fails closed to `INSUFFICIENT_EVIDENCE`.
 
+## Protocol v3 security milestone
+
+The next release adds an evidence-bound prompt-injection canary and deterministic canonical grounding for every model-produced match. Five adversarial injection/hallucination vectors now fail closed, and GenVM schema discovery is isolated to the 16-method governance gate. See [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), and the [milestone evidence record](docs/milestones/2026-09-security-consensus-hardening-v1.md).
+
+Protocol v3 requires a new Studionet deployment. Until that deployment is finalized and verified, the public application remains pinned to the verified v2 address below.
+
 ## Verdicts
 
 - `CLEAR`: no active canonical affiliation matches a proposal recipient.

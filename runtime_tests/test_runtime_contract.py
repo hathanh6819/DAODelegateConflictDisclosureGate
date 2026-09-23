@@ -18,8 +18,12 @@ def mock_snapshot(vm,disclosed=True):
  tree="c"*40;api=f"https://api.github.com/repos/{REPO}";responses={f"{api}/git/commits/{COMMIT}":json.dumps({"sha":COMMIT,"tree":{"sha":tree}}),f"{api}/git/trees/{tree}?recursive=1":json.dumps({"sha":tree,"truncated":False,"tree":entries})}
  for path,body in docs.items():responses[f"https://raw.githubusercontent.com/{REPO}/{COMMIT}/{path}"]=body
  for url,body in responses.items():vm.mock_web("^"+re.escape(url)+"$",{"status":200,"body":body})
+ ordered_urls=[f"{api}/git/commits/{COMMIT}",f"{api}/git/trees/{tree}?recursive=1"]+[f"https://raw.githubusercontent.com/{REPO}/{COMMIT}/{path}" for path in sorted(docs)]
+ receipts=[{"url":url,"sha256":hashlib.sha256(responses[url].encode()).hexdigest()} for url in ordered_urls]
+ evidence={"repo":REPO,"commit":COMMIT,"proposal_id":"DAO-42","delegate":DELEGATE,"policy":"Active recipient relationships must be disclosed","recipients":json.loads(docs["proposal.json"])["recipients"],"canonical_relationships":json.loads(docs["affiliations.json"])["delegates"][0]["relationships"],"declared_relationships":json.loads(docs["disclosure.json"])["relationships"],"snapshot":{path:{"blob":next(x["sha"] for x in entries if x["path"]==path),"content":body} for path,body in docs.items()},"receipts":receipts}
+ digest=hashlib.sha256(json.dumps(evidence,sort_keys=True,separators=(",",":")).encode()).hexdigest();vm._mandate_canary="MANDATE_GLASS_"+digest[:16]
 def decide(vm,verdict,disclosed=True):
- matches=[] if verdict=="CLEAR" else [{"recipient_id":"R1","organization":"Acme Labs","role":"Advisor","disclosed":disclosed}];vm.mock_llm("conflict-of-interest disclosure verifier",json.dumps({"verdict":verdict,"matches":matches}))
+ matches=[] if verdict=="CLEAR" else [{"recipient_id":"R1","organization":"Acme Labs","role":"Advisor","disclosed":disclosed}];vm.mock_llm("conflict-of-interest disclosure verifier",json.dumps({"verdict":verdict,"matches":matches,"canary":vm._mandate_canary}))
 
 def test_authority_controls_sources_and_stale_revision(direct_deploy,direct_vm):
  c=direct_deploy(CONTRACT);owner=c.owner;dao=c.register_dao(owner,REPO,"proposal.json","affiliations.json","disclosure.json","Policy");sender(direct_vm,OTHER)
@@ -58,4 +62,4 @@ def test_deadline_expiry_blocks_vote_without_consuming(direct_deploy,direct_vm):
  with pytest.raises(Exception,match="VOTE_WINDOW_CLOSED"):c.execute_vote(rid,1,ACTION,True)
  assert c.get_counts()["votes"]==0 and c.get_review(rid)["authorization_consumed"]==0
 def test_protocol_and_schema(direct_deploy,direct_vm):
- c=direct_deploy(CONTRACT);assert c.get_protocol()["version"]==2;assert c.get_counts()=={"daos":0,"proposals":0,"reviews":0,"votes":0}
+ c=direct_deploy(CONTRACT);assert c.get_protocol()["version"]==3;assert c.get_protocol()["security_profile"]=="CANARY_AND_CANONICAL_GROUNDING";assert c.get_counts()=={"daos":0,"proposals":0,"reviews":0,"votes":0}
