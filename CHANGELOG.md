@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.0] - 2026-10-09
+
+### Conflict Recusal & Substitute Delegate Lineage
+
+- Added on-chain recusal for evaluated `DISCLOSED_CONFLICT` and `UNDISCLOSED_CONFLICT` reviews.
+- Added DAO-authority appointment of a distinct substitute after recusal. A substitute receives a fresh pending review and never inherits evidence, verdict, authorization scope, or consumption state.
+- Added bounded, non-repeating review lineage with parent, root, successor, depth and recusal timestamp provenance.
+- Added terminal `SUPERSEDED` state for the replaced review and replay protection against a second appointment.
+- Added `get_review_lineage` plus substitution counters and lineage fields in `get_review`.
+- Added v4 frontend remediation workflow and visible lineage provenance.
+- Expanded verification to 53 security/invariant tests and 11 GenLayer Direct Mode tests; frontend tests and production build pass; GenVM validates 19 public methods.
+
+### Deployment status
+
+Protocol v4 changes storage and ABI and therefore requires a fresh Studionet deployment. Protocol v3 remains the verified production deployment until v4 source parity and live recusal lifecycle are complete.
+
 ## [3.0.0] - 2026-09-23
 
 ### Security & Consensus Hardening v1

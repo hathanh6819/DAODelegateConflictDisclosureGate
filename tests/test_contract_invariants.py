@@ -44,7 +44,7 @@ def test_prompt_injection_canary_and_grounding_are_enforced():
     assert "PROMPT_INJECTION_CANARY_MISMATCH" in SOURCE
     assert "MATCH_RECIPIENT_NOT_GROUNDED" in SOURCE
     assert "MATCH_RELATIONSHIP_NOT_GROUNDED" in SOURCE
-    assert "CANARY_AND_CANONICAL_GROUNDING" in SOURCE
+    assert "CANARY_GROUNDING_AND_RECUSAL_LINEAGE" in SOURCE
 
 
 def test_no_value_custody_surface():

@@ -13,6 +13,8 @@ AUTHORIZED = 3
 CONSUMED = 4
 UNRESOLVED = 5
 CANCELLED = 6
+RECUSED = 7
+SUPERSEDED = 8
 
 VERDICT_CLEAR = 1
 VERDICT_DISCLOSED_CONFLICT = 2
@@ -26,7 +28,8 @@ MAX_TOTAL_BYTES = 28000
 MAX_RELATIONSHIPS = 12
 MAX_RECIPIENTS = 12
 MAX_RETRIES = 3
-PROTOCOL_VERSION = 3
+MAX_SUBSTITUTIONS = 3
+PROTOCOL_VERSION = 4
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
@@ -488,6 +491,7 @@ class MandateGlassGovernanceGate(gl.Contract):
     proposal_count: u256
     review_count: u256
     vote_count: u256
+    substitution_count: u256
 
     dao_authority: TreeMap[u256, str]
     dao_repository: TreeMap[u256, str]
@@ -521,6 +525,11 @@ class MandateGlassGovernanceGate(gl.Contract):
     review_match_organization: TreeMap[u256, str]
     review_match_role: TreeMap[u256, str]
     review_match_disclosed: TreeMap[u256, u256]
+    review_parent: TreeMap[u256, u256]
+    review_root: TreeMap[u256, u256]
+    review_successor: TreeMap[u256, u256]
+    review_depth: TreeMap[u256, u256]
+    review_recused_at: TreeMap[u256, u256]
 
     vote_review: TreeMap[u256, u256]
     vote_proposal: TreeMap[u256, u256]
@@ -535,6 +544,7 @@ class MandateGlassGovernanceGate(gl.Contract):
         self.proposal_count = u256(0)
         self.review_count = u256(0)
         self.vote_count = u256(0)
+        self.substitution_count = u256(0)
 
     def _owner_only(self):
         if _address(gl.message.sender_address) != self.owner: raise gl.vm.UserError("ONLY_OWNER")
@@ -619,7 +629,50 @@ class MandateGlassGovernanceGate(gl.Contract):
         self.review_state[rid], self.review_revision[rid], self.review_retry_count[rid] = u256(PENDING), u256(1), u256(0)
         self.review_verdict[rid], self.review_reason[rid] = u256(VERDICT_INSUFFICIENT_EVIDENCE), "PENDING_EVALUATION"
         self.review_digest[rid], self.review_match_count[rid], self.review_consumed[rid], self.review_scope[rid] = "", u256(0), u256(0), ""
+        self.review_parent[rid],self.review_root[rid],self.review_successor[rid]=u256(0),rid,u256(0)
+        self.review_depth[rid],self.review_recused_at[rid]=u256(0),u256(0)
         self.review_count = rid
+        return rid
+
+    @gl.public.write
+    def recuse_review(self, review_id: u256, expected_revision: u256) -> u256:
+        if review_id<=u256(0) or review_id>self.review_count: raise gl.vm.UserError("INVALID_REVIEW_ID")
+        if _address(gl.message.sender_address)!=self.review_delegate[review_id]: raise gl.vm.UserError("ONLY_BOUND_DELEGATE")
+        if expected_revision!=self.review_revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
+        if int(self.review_state[review_id])!=EVALUATED: raise gl.vm.UserError("ONLY_EVALUATED_CAN_RECUSE")
+        if int(self.review_verdict[review_id]) not in (VERDICT_DISCLOSED_CONFLICT,VERDICT_UNDISCLOSED_CONFLICT): raise gl.vm.UserError("CONFLICT_REQUIRED")
+        if int(self.review_consumed[review_id])==1: raise gl.vm.UserError("AUTHORIZATION_ALREADY_CONSUMED")
+        self.review_state[review_id],self.review_scope[review_id]=u256(RECUSED),""
+        self.review_recused_at[review_id]=u256(_now())
+        return review_id
+
+    @gl.public.write
+    def appoint_substitute(self, review_id: u256, expected_revision: u256, substitute: Address) -> u256:
+        if review_id<=u256(0) or review_id>self.review_count: raise gl.vm.UserError("INVALID_REVIEW_ID")
+        pid=self.review_proposal[review_id];dao_id=self.proposal_dao[pid]
+        self._dao_authority_only(dao_id)
+        if expected_revision!=self.review_revision[review_id]: raise gl.vm.UserError("STALE_REVISION")
+        if int(self.review_successor[review_id])!=0: raise gl.vm.UserError("SUBSTITUTE_ALREADY_APPOINTED")
+        if int(self.review_state[review_id])!=RECUSED: raise gl.vm.UserError("REVIEW_NOT_RECUSED")
+        if int(self.proposal_open[pid])!=1 or _now()>int(self.proposal_deadline[pid]): raise gl.vm.UserError("VOTE_WINDOW_CLOSED")
+        successor=_address(substitute)
+        if not _address_text(successor): raise gl.vm.UserError("INVALID_SUBSTITUTE")
+        cursor=review_id;depth=int(self.review_depth[review_id])+1
+        if depth>MAX_SUBSTITUTIONS: raise gl.vm.UserError("SUBSTITUTION_LIMIT_REACHED")
+        while int(cursor)>0:
+            if self.review_delegate[cursor]==successor: raise gl.vm.UserError("DELEGATE_ALREADY_IN_LINEAGE")
+            cursor=self.review_parent[cursor]
+        rid=self.review_count+u256(1)
+        self.review_proposal[rid],self.review_delegate[rid]=pid,successor
+        self.review_state[rid],self.review_revision[rid],self.review_retry_count[rid]=u256(PENDING),u256(1),u256(0)
+        self.review_verdict[rid],self.review_reason[rid]=u256(VERDICT_INSUFFICIENT_EVIDENCE),"PENDING_SUBSTITUTE_EVALUATION"
+        self.review_digest[rid],self.review_match_count[rid],self.review_consumed[rid],self.review_scope[rid]="",u256(0),u256(0),""
+        self.review_parent[rid],self.review_root[rid],self.review_successor[rid]=review_id,self.review_root[review_id],u256(0)
+        self.review_depth[rid],self.review_recused_at[rid]=u256(depth),u256(0)
+        self.review_successor[review_id]=rid
+        self.review_state[review_id]=u256(SUPERSEDED)
+        self.review_count=rid
+        self.substitution_count=self.substitution_count+u256(1)
         return rid
 
     def _evaluate(self, review_id: u256, expected_revision: u256) -> u256:
@@ -700,11 +753,11 @@ class MandateGlassGovernanceGate(gl.Contract):
     @gl.public.view
     def get_protocol(self)->dict:
         return {"name":"MandateGlassGovernanceGate","version":PROTOCOL_VERSION,"max_files":MAX_FILES,"max_file_bytes":MAX_FILE_BYTES,"max_total_bytes":MAX_TOTAL_BYTES,"max_retries":MAX_RETRIES,
-                "security_profile":"CANARY_AND_CANONICAL_GROUNDING"}
+                "max_substitutions":MAX_SUBSTITUTIONS,"security_profile":"CANARY_GROUNDING_AND_RECUSAL_LINEAGE"}
 
     @gl.public.view
     def get_counts(self)->dict:
-        return {"daos":int(self.dao_count),"proposals":int(self.proposal_count),"reviews":int(self.review_count),"votes":int(self.vote_count)}
+        return {"daos":int(self.dao_count),"proposals":int(self.proposal_count),"reviews":int(self.review_count),"votes":int(self.vote_count),"substitutions":int(self.substitution_count)}
 
     @gl.public.view
     def get_dao(self,dao_id:u256)->dict:
@@ -720,7 +773,16 @@ class MandateGlassGovernanceGate(gl.Contract):
     def get_review(self,rid:u256)->dict:
         if rid<=u256(0) or rid>self.review_count:return {}
         pid=self.review_proposal[rid]
-        return {"review_id":int(rid),"proposal_id":int(pid),"dao_id":int(self.proposal_dao[pid]),"delegate":self.review_delegate[rid],"state":int(self.review_state[rid]),"revision":int(self.review_revision[rid]),"retry_count":int(self.review_retry_count[rid]),"verdict":int(self.review_verdict[rid]),"reason":self.review_reason[rid],"evidence_digest":self.review_digest[rid],"match_count":int(self.review_match_count[rid]),"authorization_consumed":int(self.review_consumed[rid]),"authorization_scope":self.review_scope[rid]}
+        return {"review_id":int(rid),"proposal_id":int(pid),"dao_id":int(self.proposal_dao[pid]),"delegate":self.review_delegate[rid],"state":int(self.review_state[rid]),"revision":int(self.review_revision[rid]),"retry_count":int(self.review_retry_count[rid]),"verdict":int(self.review_verdict[rid]),"reason":self.review_reason[rid],"evidence_digest":self.review_digest[rid],"match_count":int(self.review_match_count[rid]),"authorization_consumed":int(self.review_consumed[rid]),"authorization_scope":self.review_scope[rid],"parent_review_id":int(self.review_parent[rid]),"root_review_id":int(self.review_root[rid]),"successor_review_id":int(self.review_successor[rid]),"substitution_depth":int(self.review_depth[rid]),"recused_at":str(self.review_recused_at[rid])}
+
+    @gl.public.view
+    def get_review_lineage(self,rid:u256)->list:
+        if rid<=u256(0) or rid>self.review_count:return []
+        root=self.review_root[rid];out=[];cursor=root;steps=0
+        while int(cursor)>0 and steps<=MAX_SUBSTITUTIONS:
+            out.append({"review_id":int(cursor),"delegate":self.review_delegate[cursor],"state":int(self.review_state[cursor]),"verdict":int(self.review_verdict[cursor]),"parent_review_id":int(self.review_parent[cursor]),"successor_review_id":int(self.review_successor[cursor]),"depth":int(self.review_depth[cursor]),"recused_at":str(self.review_recused_at[cursor])})
+            cursor=self.review_successor[cursor];steps+=1
+        return out
 
     @gl.public.view
     def get_vote(self,vid:u256)->dict:
