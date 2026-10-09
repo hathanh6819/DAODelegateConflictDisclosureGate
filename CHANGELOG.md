@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.1] - 2026-10-09
+
+### Fresh substitute evidence binding
+
+- Added a per-review evidence commit. The original review inherits the proposal snapshot; each substitute appointment must bind a different valid Git commit containing that delegate's canonical registry and disclosure documents.
+- Added the evidence commit to the complete authorization scope, so neither evidence revision nor delegate identity can be swapped after authorization.
+- Added `FRESH_EVIDENCE_REQUIRED` and `INVALID_EVIDENCE_COMMIT` guards plus regression coverage.
+- The empty v4.0.0 deployment `0x3C9B63637b963FBDc4D7d256489C956679be204c` is superseded before any DAO or proposal registration. A fresh deployment is required.
+
 ## [4.0.0] - 2026-10-09
 
 ### Conflict Recusal & Substitute Delegate Lineage
@@ -10,7 +19,7 @@
 - Added terminal `SUPERSEDED` state for the replaced review and replay protection against a second appointment.
 - Added `get_review_lineage` plus substitution counters and lineage fields in `get_review`.
 - Added v4 frontend remediation workflow and visible lineage provenance.
-- Expanded verification to 53 security/invariant tests and 11 GenLayer Direct Mode tests; frontend tests and production build pass; GenVM validates 19 public methods.
+- Expanded verification to 54 security/invariant tests and 11 GenLayer Direct Mode tests; frontend tests and production build pass; GenVM validates 19 public methods.
 
 ### Deployment status
 

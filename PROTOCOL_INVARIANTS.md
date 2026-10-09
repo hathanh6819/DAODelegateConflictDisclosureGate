@@ -10,7 +10,7 @@
 
 ## Governance execution
 
-**MG-4 — Complete scope.** An authorization binds DAO authority, proposal, delegate, action digest, review revision, proposal revision and deadline.
+**MG-4 — Complete scope.** An authorization binds DAO authority, proposal, delegate, action digest, per-review evidence commit, review revision, proposal revision and deadline.
 
 **MG-5 — Atomic single use.** `execute_vote` records one vote and consumes its authorization in the same transaction. Any failed check changes neither value.
 
@@ -22,7 +22,7 @@
 
 **MG-8 — Authority-controlled succession.** Only the registered DAO authority may appoint a substitute, and only after recusal while the proposal remains open and unexpired.
 
-**MG-9 — No inherited authorization.** A substitute starts with a fresh `PENDING` review, revision 1, empty evidence digest, empty scope, zero matches and zero consumption. The predecessor becomes `SUPERSEDED`.
+**MG-9 — No inherited authorization.** A substitute starts with a fresh `PENDING` review, revision 1, empty evidence digest, empty scope, zero matches and zero consumption. Appointment requires a different valid evidence commit for the substitute; the predecessor becomes `SUPERSEDED`.
 
 **MG-10 — No identity recycling.** A substitute address may not appear anywhere earlier in its review lineage. The lineage is bounded to three substitutions.
 

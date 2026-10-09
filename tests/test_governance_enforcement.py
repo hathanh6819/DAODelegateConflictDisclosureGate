@@ -59,6 +59,13 @@ def test_substitute_review_inherits_proposal_but_not_authorization():
     assert "self.review_proposal[rid],self.review_delegate[rid]=pid,successor" in body
     assert '"PENDING_SUBSTITUTE_EVALUATION"' in body
     assert 'self.review_scope[rid]' in body and '=\"\",u256(0),u256(0),\"\"' in body
+    assert "self.review_commit[rid]=commit" in body
+    assert "FRESH_EVIDENCE_REQUIRED" in body
+
+def test_authorization_scope_binds_review_evidence_commit():
+    scope=SOURCE.split("def _scope",1)[1].split("@gl.public.write",1)[0]
+    assert "evidence_commit" in scope
+    assert "self.review_commit[review_id]" in SOURCE.rsplit("def authorize_result",1)[1].split("@gl.public.write",1)[0]
 
 def test_review_lineage_is_public_and_bounded():
     body=SOURCE.split("def get_review_lineage",1)[1].split("@gl.public.view",1)[0]

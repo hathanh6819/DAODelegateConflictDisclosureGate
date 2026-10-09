@@ -10,7 +10,7 @@ Protocol v4 turns conflict detection into an enforceable governance-remediation 
 - New `recuse_review(review_id, expected_revision)` delegate action.
 - New `appoint_substitute(review_id, expected_revision, substitute)` authority action.
 - Bounded non-repeating lineage with a maximum of three substitutions.
-- Fresh-review isolation: no verdict, digest, matches, authorization or consumed state crosses the substitution boundary.
+- Fresh-review isolation: no verdict, digest, matches, authorization or consumed state crosses the substitution boundary. Every substitute binds a different evidence commit, and that commit is part of the authorization scope.
 - New `get_review_lineage` audit view and expanded review/count readbacks.
 - New frontend remediation desk and root/parent/successor lineage display.
 - Formal invariant document mapping security properties to tests.
@@ -21,12 +21,14 @@ Protocol v3 could detect and block an undisclosed conflict but left a live propo
 
 ## Verification
 
-- `pytest tests -q -p no:cacheprovider`: 53 passed.
+- `pytest tests -q -p no:cacheprovider`: 54 passed.
 - `pytest runtime_tests -q -p no:cacheprovider`: 11 passed.
 - `genvm-lint check contracts/dao_delegate_conflict_gate.py --json`: passed; 19 methods, 8 views, 11 writes.
 - `npm test -- --run`: 7 passed.
 - `npm run build`: passed.
-- Contract source SHA-256: `c635864024582a25e61938d8224d837780f1658c27c07054e8836edd3ab1d548`.
+- Contract source SHA-256: `1bc6dfe09192b6c460526d70f249b80d898870afb67607793e5933bbc89a8488` (47,288 bytes).
+
+The first empty v4 deployment at `0x3C9B63637b963FBDc4D7d256489C956679be204c` exposed a lifecycle mismatch before any DAO state was written: a single proposal snapshot could not represent both the original delegate's disclosure and a substitute's fresh disclosure. v4.0.1 corrects this with per-review evidence commits and supersedes that unused address.
 
 ## Deployment gate
 
