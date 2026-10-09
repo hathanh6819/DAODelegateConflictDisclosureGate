@@ -9,6 +9,12 @@
 - Added `FRESH_EVIDENCE_REQUIRED` and `INVALID_EVIDENCE_COMMIT` guards plus regression coverage.
 - The empty v4.0.0 deployment `0x3C9B63637b963FBDc4D7d256489C956679be204c` is superseded before any DAO or proposal registration. A fresh deployment is required.
 
+### Deployment verification
+
+- Deployed v4.0.1 at `0x28A7CD54d40F85a466E482695E263372A7CE43dA` with exact local/deployed source parity.
+- Completed the public conflict-recusal-substitution lifecycle: `1 DAO / 1 proposal / 2 reviews / 1 substitution / 1 vote`.
+- Verified conflict authorization rejection, delegate recycling rejection, predecessor vote rejection, atomic substitute vote, and replay rejection.
+
 ## [4.0.0] - 2026-10-09
 
 ### Conflict Recusal & Substitute Delegate Lineage
@@ -23,7 +29,7 @@
 
 ### Deployment status
 
-Protocol v4 changes storage and ABI and therefore requires a fresh Studionet deployment. Protocol v3 remains the verified production deployment until v4 source parity and live recusal lifecycle are complete.
+Protocol v4.0.1 is the verified production release at `0x28A7CD54d40F85a466E482695E263372A7CE43dA`; its source parity and live conflict-recusal-substitute-vote lifecycle are recorded in `docs/LIVE_E2E_V4.md`.
 
 ## [3.0.0] - 2026-09-23
 

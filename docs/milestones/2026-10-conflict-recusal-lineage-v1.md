@@ -30,7 +30,9 @@ Protocol v3 could detect and block an undisclosed conflict but left a live propo
 
 The first empty v4 deployment at `0x3C9B63637b963FBDc4D7d256489C956679be204c` exposed a lifecycle mismatch before any DAO state was written: a single proposal snapshot could not represent both the original delegate's disclosure and a substitute's fresh disclosure. v4.0.1 corrects this with per-review evidence commits and supersedes that unused address.
 
-## Deployment gate
+## Live deployment and lifecycle
 
-Fresh v4 deployment and live evidence are required because storage and ABI changed. Production remains on verified v3 until deployed/local source parity, one conflict-recusal-substitute-vote lifecycle, negative replay tests, frontend environment update and Vercel verification are complete.
+The corrected v4.0.1 source is deployed at [`0x28A7CD54d40F85a466E482695E263372A7CE43dA`](https://explorer-studio.genlayer.com/address/0x28A7CD54d40F85a466E482695E263372A7CE43dA). Deployed source is byte-for-byte identical to the verified local source.
+
+The completed Studionet lifecycle ends at `1 DAO / 1 proposal / 2 reviews / 1 substitution / 1 vote`. It proves an undisclosed-conflict review cannot be authorized; the conflicted delegate recuses; recycling that delegate fails; the authority appoints a distinct substitute using a fresh evidence commit; the predecessor cannot use the successor authorization; the substitute votes atomically; and replay fails. See the [complete transaction ledger](../LIVE_E2E_V4.md).
 
