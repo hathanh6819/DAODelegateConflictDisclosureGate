@@ -18,7 +18,7 @@ GenLayer is necessary for semantic entity matching such as `Acme Labs`, `Acme Fo
 
 The next milestone adds an on-chain conflict remediation path: a conflicted delegate recuses, the DAO authority appoints a distinct successor, and that substitute must complete a fresh evidence review before receiving a new vote authorization. The complete root-first lineage remains publicly auditable and cannot recycle an earlier delegate. See [PROTOCOL_INVARIANTS.md](PROTOCOL_INVARIANTS.md) and the [v4 milestone record](docs/milestones/2026-10-conflict-recusal-lineage-v1.md).
 
-Protocol v4 is locally complete and requires a fresh Studionet deployment. The live application intentionally remains on verified v3 until the v4 lifecycle and deployed-source parity are proven.
+Protocol v4.0.1 is deployed and lifecycle-verified on Studionet. The production application is bound to the verified deployment, and the complete conflict-to-substitute lineage is publicly auditable.
 
 ## Protocol v3 security milestone
 
@@ -50,8 +50,8 @@ npm run build
 
 ## Deployment
 
-Protocol v3 is deployed on Studionet at [`0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1`](https://explorer-studio.genlayer.com/address/0xAc4125fcc0BB7A11a97766F2E09ba67B48D638D1). Its deployed source matches checksum `c411d606141ea114981a92151311faf7f3aee2760c82b12aeabf6ad030bfeff2`, protocol identity `MandateGlassGovernanceGate` v3, security profile `CANARY_AND_CANONICAL_GROUNDING`, and all 16 public methods. The finalized lifecycle verifies one atomic guarded vote plus impersonation, wrong-action, replay and undisclosed-conflict rejection. The frontend is bound only to this verified address.
+Protocol v4.0.1 is deployed on Studionet at [`0x28A7CD54d40F85a466E482695E263372A7CE43dA`](https://explorer-studio.genlayer.com/address/0x28A7CD54d40F85a466E482695E263372A7CE43dA). Its deployed source matches checksum `1bc6dfe09192b6c460526d70f249b80d898870afb67607793e5933bbc89a8488`, protocol identity `MandateGlassGovernanceGate` v4, security profile `CANARY_GROUNDING_AND_RECUSAL_LINEAGE`, and all 19 public methods. The finalized lifecycle ends at `1 DAO / 1 proposal / 2 reviews / 1 substitution / 1 vote` and proves conflict rejection, recusal, non-repeating substitution, fresh evidence review, predecessor rejection, atomic voting and replay rejection.
 
-See the complete [live Studionet E2E evidence ledger](docs/LIVE_E2E_V3.md).
+See the complete [live Studionet v4 E2E evidence ledger](docs/LIVE_E2E_V4.md). The prior [v3 ledger](docs/LIVE_E2E_V3.md) remains available as the milestone baseline.
 
 Do not represent local Direct Mode results as on-chain proof. Source matching, canonical acquisition, validator consensus, authorization, replay rejection and final state must be verified on the deployed Studionet contract.
